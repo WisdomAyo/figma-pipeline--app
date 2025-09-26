@@ -8,7 +8,11 @@ return [
         'token'    => env('FIGMA_API_TOKEN'),
         'base_url' => env('FIGMA_API_BASE_URL', 'https://api.figma.com/v1'),
         'timeout'  => 120,
+        'client_id' => env('FIGMA_CLIENT_ID'),
+        'client_secret' => env('FIGMA_CLIENT_SECRET'),
+        'redirect_uri' => env('FIGMA_REDIRECT_URI'),
     ],
+    
 
     /**
      * Image Processing Configuration

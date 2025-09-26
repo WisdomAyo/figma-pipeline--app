@@ -1,0 +1,79 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Figma → Tailwind Config API",
+        "description": "API that reads Figma variables and generates Tailwind config",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/figma/tailwind-config": {
+            "post": {
+                "tags": [
+                    "Figma"
+                ],
+                "summary": "Generate Tailwind config from Figma variables",
+                "operationId": "c315ebb0f4cff6450466961d2129de2f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "file_key"
+                                ],
+                                "properties": {
+                                    "file_key": {
+                                        "type": "string",
+                                        "example": "uL0bIRuhx1tH0b6INwWDXq"
+                                    },
+                                    "format": {
+                                        "type": "string",
+                                        "enum": [
+                                            "js",
+                                            "json"
+                                        ],
+                                        "example": "js"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Generated Tailwind config (JS string or JSON)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "tailwind_config": {
+                                            "description": "tailwind.config.js as a JS string or JSON",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Figma",
+            "description": "Figma"
+        }
+    ]
+}
