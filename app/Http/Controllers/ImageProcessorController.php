@@ -47,8 +47,8 @@ class ImageProcessorController extends Controller
     public function processImage(ProcessImageRequest $request): JsonResponse
     {
         try {
-            // Convert validated request data to DTO
-                    $data = ProcessImageData::from([
+            
+                $data = ProcessImageData::from([
                 'fileKey' => $request->validated('file_key'),
                 'nodeId'  => $request->validated('node_id'),
             ]);

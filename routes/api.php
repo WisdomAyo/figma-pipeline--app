@@ -14,6 +14,6 @@ Route::prefix('v1')->group(function () {
     // Process Figma image
     Route::post('/process-image', [ImageProcessorController::class, 'processImage'])->name('api.process-image');
     Route::post('figma/tailwind-config', [FigmaTailwindController::class, 'generate']);
-    Route::get('/oauth/figma/login', [FigmaAuthController::class, 'redirectToFigma']);
-    Route::get('/oauth/figma/callback', [FigmaAuthController::class, 'handleCallback']);
 });
+
+

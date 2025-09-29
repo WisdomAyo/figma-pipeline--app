@@ -18,7 +18,7 @@ class FigmaTailwindBuilder
     {
         $this->http = new Client([
             'base_uri' => 'https://api.figma.com',
-            'timeout'  => 10.0,
+            'timeout'  => 120.0,
             // You may add retries/middleware as needed
         ]);
     }
@@ -30,45 +30,54 @@ class FigmaTailwindBuilder
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function build(string $fileKey, string $format = 'js'): string
-    {
-      $token = config('figma.api.token') ?: env('FIGMA_TOKEN');
-    
-        if (empty($token)) {
-               throw new \RuntimeException('No valid Figma access token found. Please authenticate via /auth/figma/login');
-        }
+{
+    $token = config('figma.api.token');
 
-        $response = $this->http->request('GET', "/v1/files/{$fileKey}/variables/local", [
-            'headers' => [
-                'Authorization' => "Bearer {$token}",
-                'Accept'        => 'application/json',
-            ],
-        ]);
-
-        $payload = json_decode((string) $response->getBody(), true);
-
-        $variables = $payload['variables'] ?? $payload['data'] ?? [];
-        // Normalize structure: some Figma responses put variables under 'variables', some under 'data', keep robust.
-
-        $theme = $this->mapVariablesToTheme($variables);
-
-        // Build tailwind config array
-        $configArray = [
-            'content' => ["./src/**/*.{js,ts,jsx,tsx,vue,blade.php}"],
-            'theme' => [
-                'extend' => $theme,
-            ],
-            'plugins' => [],
-        ];
-
-        if ($format === 'json') {
-            return json_encode($configArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        }
-
-        // Build JS string (module.exports)
-        $js = $this->toJsModuleString($configArray);
-
-        return $js;
+    if (empty($token)) {
+        throw new \RuntimeException('No valid Figma access token found. Please authenticate via /auth/figma/login');
     }
+
+    $response = $this->http->request('GET', "/v1/files/{$fileKey}/variables/local", [
+        'headers' => [
+            'X-Figma-Token' => $token,
+            'Accept'        => 'application/json',
+        ],
+    ]);
+
+    $payload = json_decode((string) $response->getBody(), true);
+
+    // Try to find variables (Enterprise responses nest them under meta)
+    $variables = $payload['variables']
+        ?? ($payload['meta']['variables'] ?? [])
+        ?? $payload['data']
+        ?? [];
+
+    // Normalize associative array → plain array
+    if (!empty($variables) && is_array($variables)) {
+        if (array_keys($variables) !== range(0, count($variables) - 1)) {
+            $variables = array_values($variables);
+        }
+    }
+
+    $theme = $this->mapVariablesToTheme($variables);
+
+    $configArray = [
+        'content' => ["./src/**/*.{js,ts,jsx,tsx,vue,blade.php}"],
+        'theme' => [
+            'extend' => $theme,
+        ],
+        'plugins' => [],
+    ];
+
+    if ($format === 'json') {
+        return json_encode($configArray, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    }
+
+    $js = $this->toJsModuleString($configArray);
+
+    return $js;
+}
+
 
 
     public function buildFromJson(array $variablesJson, string $format = 'js')
@@ -95,8 +104,8 @@ class FigmaTailwindBuilder
     }
 
         // Return as JS config file
-        return "/** Generated locally */\nmodule.exports = " 
-            . json_encode(['theme' => $theme], JSON_PRETTY_PRINT) 
+        return "/** Generated locally */\nmodule.exports = "
+            . json_encode(['theme' => $theme], JSON_PRETTY_PRINT)
             . ";";
     }
 
@@ -172,7 +181,7 @@ class FigmaTailwindBuilder
      */
     private function extractValue(array $var)
     {
-        // Commonly Figma variable has 'values' or 'value' or 'variableValues[0].value'
+
         if (isset($var['value'])) {
             return $var['value'];
         }
@@ -186,6 +195,11 @@ class FigmaTailwindBuilder
             $first = $var['variableValues'][0] ?? null;
             return $first['value'] ?? $first;
         }
+         if (isset($var['valuesByMode']) && is_array($var['valuesByMode'])) {
+        // Pick the first mode’s value
+        $first = reset($var['valuesByMode']);
+        return $first;
+    }
 
         return $var;
     }

@@ -12,7 +12,7 @@ return [
         'client_secret' => env('FIGMA_CLIENT_SECRET'),
         'redirect_uri' => env('FIGMA_REDIRECT_URI'),
     ],
-    
+
 
     /**
      * Image Processing Configuration
