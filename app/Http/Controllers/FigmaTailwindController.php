@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * @OA\Post(
- *     path="/api/figma/tailwind-config",
+ *     path="/api/v1/figma/tailwind-config",
  *     summary="Generate Tailwind config from Figma variables",
  *     tags={"Figma"},
  *     @OA\RequestBody(
@@ -32,13 +32,10 @@ use Illuminate\Support\Facades\Log;
  *     ),
  *     @OA\Response(response=422, description="Validation error"),
  *     @OA\Response(response=500, description="Internal server error")
- * ),
- *  * @OA\Info(
- *     title="Figma → Tailwind Config API",
- *     version="1.0.0",
- *     description="API that reads Figma variables and generates Tailwind config"
  * )
  */
+
+
 class FigmaTailwindController extends Controller
 {
     public function __construct(private FigmaTailwindBuilder $builder) {}

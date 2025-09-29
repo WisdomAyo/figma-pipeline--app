@@ -1,18 +1,35 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Figma → Tailwind Config API",
-        "description": "API that reads Figma variables and generates Tailwind config",
+        "title": "Figma Pipeline API",
+        "description": "API for processing Figma designs, optimizing images, and detecting vector icons",
+        "contact": {
+            "email": "dev@yourcompany.com"
+        },
+        "license": {
+            "name": "Proprietary",
+            "url": "https://yourcompany.com/license"
+        },
         "version": "1.0.0"
     },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development Server"
+        },
+        {
+            "url": "https://api.yourapp.com",
+            "description": "Production Server"
+        }
+    ],
     "paths": {
-        "/api/figma/tailwind-config": {
+        "/api/v1/figma/tailwind-config": {
             "post": {
                 "tags": [
                     "Figma"
                 ],
                 "summary": "Generate Tailwind config from Figma variables",
-                "operationId": "c315ebb0f4cff6450466961d2129de2f",
+                "operationId": "d4648a08cc9fb5748f3e5df761e15c17",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -68,9 +85,183 @@
                     }
                 }
             }
+        },
+        "/api/v1/detect-icons": {
+            "post": {
+                "tags": [
+                    "Icon Detection"
+                ],
+                "summary": "Detect and download vector icons from Figma",
+                "description": "Detects vector icons and icon groups from a Figma design, downloads them as SVG files, and returns public URLs",
+                "operationId": "detectIcons",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "file_key",
+                                    "node_id"
+                                ],
+                                "properties": {
+                                    "file_key": {
+                                        "description": "The Figma file key",
+                                        "type": "string",
+                                        "example": "6uZ8mS1F4Oi7aL0VJLau49"
+                                    },
+                                    "node_id": {
+                                        "description": "The Figma node ID",
+                                        "type": "string",
+                                        "example": "13191:107467"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Icons detected and downloaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Icons detected and downloaded successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "assets": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "icon_home_a1b2c3d4.svg"
+                                                            },
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": "https://yourapp.com/storage/figma_icons/icon_home_a1b2c3d4.svg"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "example": "2024-01-15, 14:30:45"
+                                        },
+                                        "execution_time": {
+                                            "type": "string",
+                                            "example": "2150.45 ms"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or processing failure",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to detect icons"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "error": {
+                                                    "type": "string",
+                                                    "example": "No node found for ID: 13191:107467"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "example": "2024-01-15, 14:30:45"
+                                        },
+                                        "execution_time": {
+                                            "type": "string",
+                                            "example": "150.23 ms"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SuccessResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object"
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    },
+                    "execution_time": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "errors": {
+                        "type": "object"
+                    },
+                    "timestamp": {
+                        "type": "string"
+                    },
+                    "execution_time": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
         }
     },
     "tags": [
+        {
+            "name": "Icon Detection",
+            "description": "Operations related to detecting and downloading Figma icons"
+        },
         {
             "name": "Figma",
             "description": "Figma"
